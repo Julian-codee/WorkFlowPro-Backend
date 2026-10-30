@@ -11,6 +11,6 @@ router = APIRouter()
 async def health_check():
     return {
         "status": "healthy",
-        "application": "Imagen 3D Backend",
+        "application": "WorkFlowPro",
         "version": "0.1.0",
     }

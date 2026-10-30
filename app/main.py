@@ -20,7 +20,7 @@ app.include_router(
 @app.get("/", tags=["Sistema"])
 async def root():
     return {
-        "application": "Imagen 3D",
+        "application": "WorkFlowPro",
         "message": "API operativa",
         "documentation": "/docs",
     }

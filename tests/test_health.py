@@ -9,7 +9,7 @@ def test_root():
     response = client.get("/")
 
     assert response.status_code == 200
-    assert response.json()["application"] == "Imagen 3D"
+    assert response.json()["application"] == "WorkFlowPro"
 
 
 def test_health():
