@@ -4,10 +4,7 @@ from app.api.v1.router import api_router
 
 app = FastAPI(
     title="Imagen 3D API",
-    description=(
-        "Backend central para el ecosistema empresarial "
-        "de Imagen 3D."
-    ),
+    description=("Backend central para el ecosistema empresarial de Imagen 3D."),
     version="0.1.0",
 )
 
