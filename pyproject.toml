@@ -33,4 +33,5 @@ target-version = "py313"
 ignore = [
     "B008",  # FastAPI Depends/Query in defaults is standard practice
     "DTZ003",  # datetime.utcnow() is fine for UTC timestamps
+    "UP037",  # SQLAlchemy relationships need string forward refs for circular imports
 ]

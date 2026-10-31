@@ -1,19 +1,19 @@
+from __future__ import annotations
+
 import enum
 from datetime import datetime
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from sqlalchemy import (
-    DateTime,
-    Enum,
-    Index,
-    String,
-    Text,
-    func,
-)
+from sqlalchemy import DateTime, Enum, ForeignKey, Index, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+
+if TYPE_CHECKING:
+    from app.models.tenant import Tenant
+    from app.models.user import User
 
 
 class TaskPriority(str, enum.Enum):
@@ -61,16 +61,19 @@ class Task(Base):
     )
     tenant_id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
+        ForeignKey("tenants.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
     assignee_id: Mapped[UUID | None] = mapped_column(
         PG_UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
         nullable=True,
         index=True,
     )
     created_by_id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="RESTRICT"),
         nullable=False,
     )
     created_at: Mapped[datetime] = mapped_column(
@@ -85,10 +88,18 @@ class Task(Base):
         nullable=False,
     )
 
-    # Relationships (lazy loading by default, can be overridden in queries)
-    # tenant: Mapped["Tenant"] = relationship(back_populates="tasks")
-    # assignee: Mapped["User"] = relationship(back_populates="assigned_tasks", foreign_keys=[assignee_id])
-    # creator: Mapped["User"] = relationship(back_populates="created_tasks", foreign_keys=[created_by_id])
+    # Relationships
+    tenant: Mapped["Tenant"] = relationship(back_populates="tasks", lazy="selectin")
+    assignee: Mapped["User"] = relationship(
+        back_populates="assigned_tasks",
+        foreign_keys=[assignee_id],
+        lazy="selectin",
+    )
+    creator: Mapped["User"] = relationship(
+        back_populates="created_tasks",
+        foreign_keys=[created_by_id],
+        lazy="selectin",
+    )
 
     __table_args__ = (
         Index("ix_tasks_tenant_status", "tenant_id", "status"),

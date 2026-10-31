@@ -3,6 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.v1.endpoints.auth import get_current_tenant_id, get_current_user_id
 from app.db.session import get_db
 from app.models.tasks import TaskPriority, TaskStatus
 from app.schemas.tasks import (
@@ -15,21 +16,6 @@ from app.schemas.tasks import (
     TaskUpdate,
 )
 from app.services.tasks_service import TaskService
-
-
-# Dependency para obtener tenant_id (placeholder - en producción vendría del JWT/token)
-async def get_current_tenant_id() -> UUID:
-    # TODO: Extraer del token JWT autenticado
-    # Por ahora usamos un UUID fijo para desarrollo
-    from uuid import UUID
-    return UUID("00000000-0000-0000-0000-000000000001")
-
-
-async def get_current_user_id() -> UUID:
-    # TODO: Extraer del token JWT autenticado
-    from uuid import UUID
-    return UUID("00000000-0000-0000-0000-000000000002")
-
 
 router = APIRouter(prefix="/tasks", tags=["Tareas"])
 
