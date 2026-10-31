@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
 
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/workflowpro"
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:1091@localhost:5432/workflowpro"
     DATABASE_POOL_SIZE: int = 10
     DATABASE_MAX_OVERFLOW: int = 20
 
