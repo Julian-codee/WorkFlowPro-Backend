@@ -5,6 +5,12 @@ requires-python = ">=3.13, <3.14"
 dependencies = [
     "fastapi[standard-no-fastapi-cloud-cli]>=0.162.0",
     "pydantic-settings>=2.16.2",
+    "sqlalchemy[asyncio]>=2.0.30",
+    "asyncpg>=0.29.0",
+    "alembic>=1.12.0",
+    "python-multipart>=0.0.9",
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
 ]
 
 [dependency-groups]
@@ -24,3 +30,7 @@ pythonpath = ["."]
 [tool.ruff]
 line-length = 88
 target-version = "py313"
+ignore = [
+    "B008",  # FastAPI Depends/Query in defaults is standard practice
+    "DTZ003",  # datetime.utcnow() is fine for UTC timestamps
+]
