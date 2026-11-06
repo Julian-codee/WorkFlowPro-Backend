@@ -16,8 +16,8 @@ class TaskRepository:
         self,
         *,
         title: str,
-        tenant_id: UUID,
         created_by_id: UUID,
+        tenant_id: UUID,
         description: str | None = None,
         priority: TaskPriority = TaskPriority.MEDIUM,
         due_date: datetime | None = None,
@@ -37,17 +37,13 @@ class TaskRepository:
         await self.db.refresh(task)
         return task
 
-    async def get_by_id(self, task_id: UUID, tenant_id: UUID) -> Task | None:
-        stmt = select(Task).where(
-            Task.id == task_id,
-            Task.tenant_id == tenant_id,
-        )
+    async def get_by_id(self, task_id: UUID) -> Task | None:
+        stmt = select(Task).where(Task.id == task_id)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
     async def get_all(
         self,
-        tenant_id: UUID,
         *,
         page: int = 1,
         page_size: int = 20,
@@ -58,8 +54,8 @@ class TaskRepository:
         sort_by: str = "created_at",
         sort_order: str = "desc",
     ) -> tuple[Sequence[Task], int]:
-        stmt = select(Task).where(Task.tenant_id == tenant_id)
-        count_stmt = select(func.count()).where(Task.tenant_id == tenant_id)
+        stmt = select(Task)
+        count_stmt = select(func.count())
 
         # Filters
         if status:
@@ -144,11 +140,3 @@ class TaskRepository:
     async def delete(self, task: Task) -> None:
         await self.db.delete(task)
         await self.db.flush()
-
-    async def exists_by_id(self, task_id: UUID, tenant_id: UUID) -> bool:
-        stmt = select(func.count()).where(
-            Task.id == task_id,
-            Task.tenant_id == tenant_id,
-        )
-        result = await self.db.execute(stmt)
-        return result.scalar_one() > 0

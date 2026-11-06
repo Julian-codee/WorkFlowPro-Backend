@@ -14,6 +14,7 @@ from app.db.base import Base
 if TYPE_CHECKING:
     from app.models.tasks import Task
     from app.models.user import User
+    from app.models.user_tenant_role import UserTenantRole
 
 
 class Tenant(Base):
@@ -44,6 +45,11 @@ class Tenant(Base):
     # Relationships
     users: Mapped[list["User"]] = relationship(back_populates="tenant", lazy="dynamic")
     tasks: Mapped[list["Task"]] = relationship(back_populates="tenant", lazy="dynamic")
+    user_roles: Mapped[list["UserTenantRole"]] = relationship(
+        back_populates="tenant",
+        lazy="selectin",
+        cascade="all, delete-orphan",
+    )
 
     def __repr__(self) -> str:
         return f"<Tenant(id={self.id}, name={self.name}, slug={self.slug})>"

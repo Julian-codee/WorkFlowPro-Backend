@@ -11,39 +11,56 @@ from app.schemas.tasks import (
     TaskStatusUpdate,
     TaskUpdate,
 )
+import sqlalchemy as sa
 
 
 class TaskService:
     def __init__(self, db: AsyncSession):
         self.repository = TaskRepository(db)
+        self.db = db
+
+    async def _get_current_user_id(self) -> UUID:
+        """Obtener el user_id del contexto RLS."""
+        result = await self.db.execute(
+            sa.text("SELECT current_setting('app.current_user_id', true)")
+        )
+        user_id_str = result.scalar()
+        return UUID(user_id_str)
+
+    async def _get_current_tenant_id(self) -> UUID:
+        """Obtener el tenant_id del contexto RLS."""
+        result = await self.db.execute(
+            sa.text("SELECT current_setting('app.current_tenant_id', true)")
+        )
+        tenant_id_str = result.scalar()
+        return UUID(tenant_id_str)
 
     async def create_task(
         self,
         *,
         task_in: TaskCreate,
-        tenant_id: UUID,
-        created_by_id: UUID,
     ) -> TaskResponse:
+        created_by_id = await self._get_current_user_id()
+        tenant_id = await self._get_current_tenant_id()
         task = await self.repository.create(
             title=task_in.title,
             description=task_in.description,
             priority=task_in.priority,
             due_date=task_in.due_date,
-            tenant_id=tenant_id,
-            created_by_id=created_by_id,
             assignee_id=task_in.assignee_id,
+            created_by_id=created_by_id,
+            tenant_id=tenant_id,
         )
         return TaskResponse.model_validate(task)
 
-    async def get_task(self, task_id: UUID, tenant_id: UUID) -> TaskResponse | None:
-        task = await self.repository.get_by_id(task_id, tenant_id)
+    async def get_task(self, task_id: UUID) -> TaskResponse | None:
+        task = await self.repository.get_by_id(task_id)
         if not task:
             return None
         return TaskResponse.model_validate(task)
 
     async def get_tasks(
         self,
-        tenant_id: UUID,
         *,
         page: int = 1,
         page_size: int = 20,
@@ -55,7 +72,6 @@ class TaskService:
         sort_order: str = "desc",
     ) -> TaskListResponse:
         tasks, total = await self.repository.get_all(
-            tenant_id=tenant_id,
             page=page,
             page_size=page_size,
             status=status,
@@ -79,10 +95,9 @@ class TaskService:
     async def update_task(
         self,
         task_id: UUID,
-        tenant_id: UUID,
         task_in: TaskUpdate,
     ) -> TaskResponse | None:
-        task = await self.repository.get_by_id(task_id, tenant_id)
+        task = await self.repository.get_by_id(task_id)
         if not task:
             return None
 
@@ -99,10 +114,9 @@ class TaskService:
     async def update_task_status(
         self,
         task_id: UUID,
-        tenant_id: UUID,
         status_in: TaskStatusUpdate,
     ) -> TaskResponse | None:
-        task = await self.repository.get_by_id(task_id, tenant_id)
+        task = await self.repository.get_by_id(task_id)
         if not task:
             return None
 
@@ -112,18 +126,17 @@ class TaskService:
     async def update_task_priority(
         self,
         task_id: UUID,
-        tenant_id: UUID,
         priority_in: TaskPriorityUpdate,
     ) -> TaskResponse | None:
-        task = await self.repository.get_by_id(task_id, tenant_id)
+        task = await self.repository.get_by_id(task_id)
         if not task:
             return None
 
         updated_task = await self.repository.update_priority(task, priority_in.priority)
         return TaskResponse.model_validate(updated_task)
 
-    async def delete_task(self, task_id: UUID, tenant_id: UUID) -> bool:
-        task = await self.repository.get_by_id(task_id, tenant_id)
+    async def delete_task(self, task_id: UUID) -> bool:
+        task = await self.repository.get_by_id(task_id)
         if not task:
             return False
 

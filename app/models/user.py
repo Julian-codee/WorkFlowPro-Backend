@@ -13,6 +13,8 @@ from app.db.base import Base
 if TYPE_CHECKING:
     from app.models.tasks import Task
     from app.models.tenant import Tenant
+    from app.models.roles import Permission, UserRole
+    from app.models.user_tenant_role import UserTenantRole
 
 
 class User(Base):
@@ -49,7 +51,7 @@ class User(Base):
         nullable=False,
     )
 
-    # RelationShips
+    # Relationships
     tenant: Mapped["Tenant"] = relationship(back_populates="users", lazy="selectin")
     assigned_tasks: Mapped[list["Task"]] = relationship(
         back_populates="assignee",
@@ -61,6 +63,30 @@ class User(Base):
         foreign_keys="Task.created_by_id",
         lazy="dynamic",
     )
+    # Roles en múltiples tenants (many-to-many con tenant)
+    tenant_roles: Mapped[list["UserTenantRole"]] = relationship(
+        back_populates="user",
+        lazy="selectin",
+        cascade="all, delete-orphan",
+    )
+
+    def get_roles_in_tenant(self, tenant_id: UUID) -> list[UserRole]:
+        """Obtener roles del usuario en un tenant específico"""
+        from app.models.roles import UserRole
+        roles = []
+        for utr in self.tenant_roles:
+            if utr.tenant_id == tenant_id:
+                roles.append(UserRole(utr.role))
+        return roles
+
+    def has_permission(self, tenant_id: UUID, permission: "Permission") -> bool:
+        """Verificar si el usuario tiene un permiso en un tenant"""
+        from app.models.roles import user_has_permission
+        roles = self.get_roles_in_tenant(tenant_id)
+        # Superuser tiene todos los permisos
+        if self.is_superuser:
+            return True
+        return user_has_permission(roles, permission)
 
     def __repr__(self) -> str:
         return f"<User(id={self.id}, email={self.email}, username={self.username})>"
