@@ -21,3 +21,13 @@ async def root():
         "message": "API operativa",
         "documentation": "/docs",
     }
+
+
+@app.get("api/v1/health", tags=["Sistema"])
+async def health_check():
+    return {
+        "status": "ok",
+        "application": "WorkFlowPro",
+        "message": "Backend funcionando correctamente",
+        "api_version": "v1",
+    }
