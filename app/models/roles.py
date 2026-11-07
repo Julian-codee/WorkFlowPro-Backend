@@ -1,11 +1,6 @@
 from __future__ import annotations
 
 import enum
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from app.models.user import User
-    from app.models.tenant import Tenant
 
 
 class UserRole(str, enum.Enum):

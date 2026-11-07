@@ -1,5 +1,7 @@
 from uuid import UUID
 
+import sqlalchemy as sa
+
 from app.db.session import AsyncSession
 from app.models.tasks import TaskPriority, TaskStatus
 from app.repositories.tasks import TaskRepository
@@ -11,7 +13,6 @@ from app.schemas.tasks import (
     TaskStatusUpdate,
     TaskUpdate,
 )
-import sqlalchemy as sa
 
 
 class TaskService:

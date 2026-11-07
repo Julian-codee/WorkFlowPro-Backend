@@ -11,9 +11,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 if TYPE_CHECKING:
+    from app.models.customers import Customer, CustomerAuditLog, CustomerNote
+    from app.models.roles import Permission, UserRole
     from app.models.tasks import Task
     from app.models.tenant import Tenant
-    from app.models.roles import Permission, UserRole
     from app.models.user_tenant_role import UserTenantRole
 
 
@@ -61,6 +62,21 @@ class User(Base):
     created_tasks: Mapped[list["Task"]] = relationship(
         back_populates="creator",
         foreign_keys="Task.created_by_id",
+        lazy="dynamic",
+    )
+    created_customers: Mapped[list["Customer"]] = relationship(
+        back_populates="creator",
+        foreign_keys="Customer.created_by_id",
+        lazy="dynamic",
+    )
+    customer_notes: Mapped[list["CustomerNote"]] = relationship(
+        back_populates="author",
+        foreign_keys="CustomerNote.author_id",
+        lazy="dynamic",
+    )
+    customer_audits: Mapped[list["CustomerAuditLog"]] = relationship(
+        back_populates="user",
+        foreign_keys="CustomerAuditLog.user_id",
         lazy="dynamic",
     )
     # Roles en múltiples tenants (many-to-many con tenant)

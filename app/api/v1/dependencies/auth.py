@@ -1,4 +1,4 @@
-from typing import Annotated, Optional
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import Depends, Header, HTTPException, status
@@ -9,8 +9,7 @@ from app.db.session import get_db
 from app.models.roles import Permission, UserRole, user_has_permission
 from app.repositories.auth import UserRepository
 from app.schemas.auth import UserResponse
-from app.services.auth_service import AuthService, decode_token
-
+from app.services.auth_service import AuthService
 
 # ============================================================
 # JWT Token Dependencies
@@ -75,9 +74,6 @@ async def get_current_user_roles(
     db: AsyncSession = Depends(get_db),
 ) -> list[UserRole]:
     """Obtener los roles del usuario en su tenant actual."""
-    from app.models.user import User
-    from app.models.user_tenant_role import UserTenantRole
-    from sqlalchemy import select
     
     # Cargar usuario con sus roles
     user_repo = UserRepository(db)
@@ -111,9 +107,6 @@ class RequirePermission:
         current_user: UserResponse = Depends(get_current_user),
         db: AsyncSession = Depends(get_db),
     ) -> UserResponse:
-        from app.models.user import User
-        from app.models.user_tenant_role import UserTenantRole
-        from sqlalchemy import select
         
         user_repo = UserRepository(db)
         user = await user_repo.get_by_id(current_user.id, current_user.tenant_id)
@@ -157,7 +150,6 @@ class RequireRole:
         current_user: UserResponse = Depends(get_current_user),
         db: AsyncSession = Depends(get_db),
     ) -> UserResponse:
-        from app.models.user import User
         
         user_repo = UserRepository(db)
         user = await user_repo.get_by_id(current_user.id, current_user.tenant_id)

@@ -12,6 +12,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 if TYPE_CHECKING:
+    from app.models.customers import Customer
     from app.models.tasks import Task
     from app.models.user import User
     from app.models.user_tenant_role import UserTenantRole
@@ -45,6 +46,9 @@ class Tenant(Base):
     # Relationships
     users: Mapped[list["User"]] = relationship(back_populates="tenant", lazy="dynamic")
     tasks: Mapped[list["Task"]] = relationship(back_populates="tenant", lazy="dynamic")
+    customers: Mapped[list["Customer"]] = relationship(
+        back_populates="tenant", lazy="dynamic", cascade="all, delete-orphan"
+    )
     user_roles: Mapped[list["UserTenantRole"]] = relationship(
         back_populates="tenant",
         lazy="selectin",
