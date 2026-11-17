@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Union
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -37,7 +36,7 @@ router = APIRouter(prefix="/customers", tags=["Clientes"])
 # CREATE
 # ============================================================
 
-CustomerCreateUnion = Union[CustomerNaturalCreate, CustomerLegalCreate]
+CustomerCreateUnion = "CustomerNaturalCreate | CustomerLegalCreate"
 
 
 @router.post(
@@ -143,7 +142,7 @@ async def check_duplicates(
     tenant_id: UUID = Depends(get_current_tenant_id),
 ):
     """Verificar posibles duplicados antes de crear un cliente."""
-    service = CustomerService(db)
+    CustomerService(db)
     
     exclude_id_uuid = None
     if exclude_id:

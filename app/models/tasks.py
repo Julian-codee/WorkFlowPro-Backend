@@ -12,6 +12,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 if TYPE_CHECKING:
+    from app.models.financial import FinancialMovement
     from app.models.tenant import Tenant
     from app.models.user import User
 
@@ -99,6 +100,9 @@ class Task(Base):
         back_populates="created_tasks",
         foreign_keys=[created_by_id],
         lazy="selectin",
+    )
+    financial_movements: Mapped[list["FinancialMovement"]] = relationship(
+        back_populates="task", lazy="dynamic", cascade="all, delete-orphan"
     )
 
     __table_args__ = (

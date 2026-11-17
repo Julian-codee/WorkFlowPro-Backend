@@ -44,7 +44,7 @@ class CustomerService:
         tax_id_number = getattr(customer_in, 'tax_id_number', None)
         
         # Check duplicates
-        dup_check = await self.repository.check_duplicates(
+        await self.repository.check_duplicates(
             tenant_id,
             identification_number=identification_number,
             tax_id_number=tax_id_number,
@@ -53,8 +53,6 @@ class CustomerService:
         )
         
         # Convert enums to strings for repository
-        customer_type = customer_in.customer_type.value
-        status = customer_in.status.value
         identification_type = getattr(customer_in, 'identification_type', None)
         identification_type = identification_type.value if identification_type else None
         tax_id_type = getattr(customer_in, 'tax_id_type', None)

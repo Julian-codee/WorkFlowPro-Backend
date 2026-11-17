@@ -12,6 +12,8 @@ from app.db.base import Base
 
 if TYPE_CHECKING:
     from app.models.customers import Customer, CustomerAuditLog, CustomerNote
+    from app.models.financial import CashClosure, FinancialMovement
+    from app.models.quotations import Quotation
     from app.models.roles import Permission, UserRole
     from app.models.tasks import Task
     from app.models.tenant import Tenant
@@ -69,6 +71,11 @@ class User(Base):
         foreign_keys="Customer.created_by_id",
         lazy="dynamic",
     )
+    created_quotations: Mapped[list["Quotation"]] = relationship(
+        back_populates="creator",
+        foreign_keys="Quotation.created_by_id",
+        lazy="dynamic",
+    )
     customer_notes: Mapped[list["CustomerNote"]] = relationship(
         back_populates="author",
         foreign_keys="CustomerNote.author_id",
@@ -77,6 +84,21 @@ class User(Base):
     customer_audits: Mapped[list["CustomerAuditLog"]] = relationship(
         back_populates="user",
         foreign_keys="CustomerAuditLog.user_id",
+        lazy="dynamic",
+    )
+    created_movements: Mapped[list["FinancialMovement"]] = relationship(
+        back_populates="creator",
+        foreign_keys="FinancialMovement.created_by_id",
+        lazy="dynamic",
+    )
+    approved_late_entries: Mapped[list["FinancialMovement"]] = relationship(
+        back_populates="late_approver",
+        foreign_keys="FinancialMovement.late_entry_approved_by",
+        lazy="dynamic",
+    )
+    closed_cash_closures: Mapped[list["CashClosure"]] = relationship(
+        back_populates="closer",
+        foreign_keys="CashClosure.closed_by_id",
         lazy="dynamic",
     )
     # Roles en múltiples tenants (many-to-many con tenant)

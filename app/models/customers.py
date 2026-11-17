@@ -13,6 +13,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 if TYPE_CHECKING:
+    from app.models.financial import FinancialMovement
+    from app.models.quotations import Quotation
     from app.models.tenant import Tenant
     from app.models.user import User
 
@@ -137,6 +139,12 @@ class Customer(Base):
         back_populates="customer", lazy="dynamic", cascade="all, delete-orphan"
     )
     audit_logs: Mapped[list["CustomerAuditLog"]] = relationship(
+        back_populates="customer", lazy="dynamic", cascade="all, delete-orphan"
+    )
+    quotations: Mapped[list["Quotation"]] = relationship(
+        back_populates="customer", lazy="dynamic", cascade="all, delete-orphan"
+    )
+    financial_movements: Mapped[list["FinancialMovement"]] = relationship(
         back_populates="customer", lazy="dynamic", cascade="all, delete-orphan"
     )
     

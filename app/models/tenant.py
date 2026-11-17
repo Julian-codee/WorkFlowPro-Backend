@@ -13,6 +13,13 @@ from app.db.base import Base
 
 if TYPE_CHECKING:
     from app.models.customers import Customer
+    from app.models.financial import (
+        CashAccount,
+        CashClosure,
+        FinancialMovement,
+        WeeklyPeriod,
+    )
+    from app.models.quotations import Quotation
     from app.models.tasks import Task
     from app.models.user import User
     from app.models.user_tenant_role import UserTenantRole
@@ -47,6 +54,21 @@ class Tenant(Base):
     users: Mapped[list["User"]] = relationship(back_populates="tenant", lazy="dynamic")
     tasks: Mapped[list["Task"]] = relationship(back_populates="tenant", lazy="dynamic")
     customers: Mapped[list["Customer"]] = relationship(
+        back_populates="tenant", lazy="dynamic", cascade="all, delete-orphan"
+    )
+    quotations: Mapped[list["Quotation"]] = relationship(
+        back_populates="tenant", lazy="dynamic", cascade="all, delete-orphan"
+    )
+    cash_accounts: Mapped[list["CashAccount"]] = relationship(
+        back_populates="tenant", lazy="dynamic", cascade="all, delete-orphan"
+    )
+    weekly_periods: Mapped[list["WeeklyPeriod"]] = relationship(
+        back_populates="tenant", lazy="dynamic", cascade="all, delete-orphan"
+    )
+    cash_closures: Mapped[list["CashClosure"]] = relationship(
+        back_populates="tenant", lazy="dynamic", cascade="all, delete-orphan"
+    )
+    financial_movements: Mapped[list["FinancialMovement"]] = relationship(
         back_populates="tenant", lazy="dynamic", cascade="all, delete-orphan"
     )
     user_roles: Mapped[list["UserTenantRole"]] = relationship(
