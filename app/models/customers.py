@@ -15,6 +15,7 @@ from app.db.base import Base
 if TYPE_CHECKING:
     from app.models.financial import FinancialMovement
     from app.models.quotations import Quotation
+    from app.models.tasks import Task
     from app.models.tenant import Tenant
     from app.models.user import User
 
@@ -145,6 +146,9 @@ class Customer(Base):
         back_populates="customer", lazy="dynamic", cascade="all, delete-orphan"
     )
     financial_movements: Mapped[list["FinancialMovement"]] = relationship(
+        back_populates="customer", lazy="dynamic", cascade="all, delete-orphan"
+    )
+    tasks: Mapped[list["Task"]] = relationship(
         back_populates="customer", lazy="dynamic", cascade="all, delete-orphan"
     )
     

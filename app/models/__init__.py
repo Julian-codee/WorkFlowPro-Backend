@@ -33,7 +33,7 @@ from app.models.roles import (
     get_permissions_for_role,
     user_has_permission,
 )
-from app.models.tasks import Task, TaskPriority, TaskStatus
+from app.models.tasks import PaymentStatus, Task, TaskPriority, TaskStatus
 from app.models.tenant import Tenant
 from app.models.user import User
 from app.models.user_tenant_role import UserTenantRole
@@ -56,6 +56,7 @@ __all__ = [
     "MovementCategory",
     "MovementType",
     "PaymentMethod",
+    "PaymentStatus",
     "Permission",
     "Quotation",
     "QuotationItem",

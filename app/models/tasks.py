@@ -2,16 +2,18 @@ from __future__ import annotations
 
 import enum
 from datetime import datetime
+from decimal import Decimal
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Index, String, Text, func
+from sqlalchemy import DateTime, Enum, ForeignKey, Index, Numeric, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
 if TYPE_CHECKING:
+    from app.models.customers import Customer
     from app.models.financial import FinancialMovement
     from app.models.tenant import Tenant
     from app.models.user import User
@@ -30,6 +32,12 @@ class TaskStatus(str, enum.Enum):
     IN_REVIEW = "in_review"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
+
+
+class PaymentStatus(str, enum.Enum):
+    NO_PAYMENTS = "no_payments"         # Sin abonos
+    PARTIALLY_PAID = "partially_paid"   # Parcialmente pagado
+    PAID = "paid"                       # Pagado completamente
 
 
 class Task(Base):
@@ -60,6 +68,27 @@ class Task(Base):
     completed_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+    
+    # Información financiera
+    total_price: Mapped[Decimal | None] = mapped_column(
+        Numeric(15, 2), nullable=True, default=None
+    )
+    total_paid: Mapped[Decimal] = mapped_column(
+        Numeric(15, 2), nullable=False, default=Decimal(0)
+    )
+    pending_balance: Mapped[Decimal] = mapped_column(
+        Numeric(15, 2), nullable=False, default=Decimal(0)
+    )
+    payment_status: Mapped[PaymentStatus] = mapped_column(
+        Enum(PaymentStatus, native_enum=False),
+        default=PaymentStatus.NO_PAYMENTS,
+        nullable=False,
+        index=True,
+    )
+    last_payment_date: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    
     tenant_id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
         ForeignKey("tenants.id", ondelete="CASCADE"),
@@ -69,6 +98,12 @@ class Task(Base):
     assignee_id: Mapped[UUID | None] = mapped_column(
         PG_UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    customer_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("customers.id", ondelete="SET NULL"),
         nullable=True,
         index=True,
     )
@@ -96,6 +131,11 @@ class Task(Base):
         foreign_keys=[assignee_id],
         lazy="selectin",
     )
+    customer: Mapped["Customer"] = relationship(
+        back_populates="tasks",
+        foreign_keys=[customer_id],
+        lazy="selectin",
+    )
     creator: Mapped["User"] = relationship(
         back_populates="created_tasks",
         foreign_keys=[created_by_id],
@@ -109,6 +149,8 @@ class Task(Base):
         Index("ix_tasks_tenant_status", "tenant_id", "status"),
         Index("ix_tasks_tenant_assignee", "tenant_id", "assignee_id"),
         Index("ix_tasks_tenant_due_date", "tenant_id", "due_date"),
+        Index("ix_tasks_tenant_payment_status", "tenant_id", "payment_status"),
+        Index("ix_tasks_tenant_pending_balance", "tenant_id", "pending_balance"),
     )
 
     def __repr__(self) -> str:
